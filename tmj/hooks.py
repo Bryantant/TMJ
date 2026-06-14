@@ -1,4 +1,4 @@
-app_name = "hicom16"
+app_name = "tmj"
 app_title = "Hicom System"
 app_publisher = "Hicom System"
 app_description = "Hicom System"
@@ -14,7 +14,7 @@ app_license = "mit"
 # add_to_apps_screen = [
 # 	{
 # 		"name": "hicom16",
-# 		"logo": "/assets/hicom16/logo.png",
+# 		"logo": "/assets/tmj/logo.png",
 # 		"title": "Hicom System",
 # 		"route": "/hicom16",
 # 		"has_permission": "hicom16.api.permission.has_app_permission"
@@ -25,15 +25,15 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-app_include_css = ["/assets/hicom16/css/custom.css"]
-app_include_js = ["/assets/hicom16/js/desk_overrides.js"]
+app_include_css = ["/assets/tmj/css/custom.css"]
+app_include_js = ["/assets/tmj/js/desk_overrides.js"]
 
 # include js, css files in header of web template
-web_include_css = ["/assets/hicom16/css/custom.css"]
-# web_include_js = "/assets/hicom16/js/hicom16.js"
+web_include_css = ["/assets/tmj/css/custom.css"]
+# web_include_js = "/assets/tmj/js/hicom16.js"
 
 # Relabel app titles in the desk workspace sidebar (e.g. "ERPNext" -> "Hicom System")
-extend_bootinfo = "hicom16.boot.boot_session"
+extend_bootinfo = "tmj.boot.boot_session"
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "hicom16/public/scss/website"
