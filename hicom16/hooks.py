@@ -25,12 +25,15 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/hicom16/css/hicom16.css"
-# app_include_js = "/assets/hicom16/js/hicom16.js"
+app_include_css = ["/assets/hicom16/css/custom.css"]
+app_include_js = ["/assets/hicom16/js/desk_overrides.js"]
 
 # include js, css files in header of web template
-# web_include_css = "/assets/hicom16/css/hicom16.css"
+web_include_css = ["/assets/hicom16/css/custom.css"]
 # web_include_js = "/assets/hicom16/js/hicom16.js"
+
+# Relabel app titles in the desk workspace sidebar (e.g. "ERPNext" -> "Hicom System")
+extend_bootinfo = "hicom16.boot.boot_session"
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "hicom16/public/scss/website"
