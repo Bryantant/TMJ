@@ -5,12 +5,19 @@ System-Manager-only) doctypes and reports, so the client has one simple entry
 point instead of jumping between Buying / Selling / Stock / Invoicing /
 Financial Reports.
 
-Idempotent: deletes any existing copy first, then recreates. Re-runnable via
+This is the imperative generator. The Workspace, Workspace Sidebar (standard=1)
+and Desktop Icon are all standard=1/public, so in developer_mode each insert
+auto-exports a fixture under the tmj app (workspace/, workspace_sidebar/,
+desktop_icon/). Those committed fixtures are the source of truth: `bench migrate`
+re-imports them, so the workspace survives migrate and UI edits (which re-export
+the fixture in dev mode) persist. Re-run this generator only to rebuild from
+scratch:
     bench --site tmj.localhost execute tmj.patches.v0_0.create_tmj_workspace.execute
 Always follow with `bench --site tmj.localhost clear-cache`.
 """
 
 from json import dumps
+from urllib.parse import quote
 
 import frappe
 
@@ -139,21 +146,6 @@ def execute():
 	print(f"Created workspace + sidebar + desktop icon: {WS} (reset Desktop Layouts)")
 
 
-def after_migrate():
-	"""Restore the workspace after every `bench migrate`.
-
-	migrate re-syncs workspaces/desktop-icons from app fixtures and removes
-	app-tagged DB records that have no fixture (remove_orphan_entities,
-	delete_duplicate_icons), which wipes this imperatively-built workspace.
-	Wired via the `after_migrate` hook, this rebuilds it once the sync is done.
-	No Desktop Layout reset here: existing layouts reference the icon by its
-	stable label, so the recreated icon still renders.
-	"""
-	_recreate()
-	frappe.db.commit()
-	print(f"[tmj] Restored workspace after migrate: {WS}")
-
-
 def _create_workspace():
 	ws = frappe.new_doc("Workspace")
 	ws.title = WS
@@ -180,7 +172,7 @@ def _create_sidebar():
 	sb = frappe.new_doc("Workspace Sidebar")
 	sb.title = WS
 	sb.header_icon = "getting-started"
-	sb.standard = 0
+	sb.standard = 1  # export to a committed fixture so migrate re-imports it
 	sb.app = "tmj"
 
 	# Dashboard landing link (top level)
@@ -222,4 +214,19 @@ def _create_desktop_icon():
 	icon.standard = 1
 	icon.app = "tmj"
 	icon.idx = 0
+
+	# Show the company logo on the home-grid tile and sidebar header. The grid
+	# template falls back to `logo_url || icon_image` and the header uses
+	# `logo_url`. Pull it from Website Settings so it tracks the brand logo and
+	# is re-applied on every recreate — otherwise a manually-set image is lost
+	# each migrate (after_migrate rebuilds this icon from scratch).
+	logo = frappe.db.get_single_value("Website Settings", "app_logo")
+	if logo:
+		# Percent-encode: the sidebar-header template renders the URL raw into
+		# <img src="...">, so a space (e.g. "App Logo.png") breaks the attribute
+		# and the image fails to load. quote() keeps "/" but encodes spaces etc.
+		logo = quote(logo)
+		icon.logo_url = logo
+		icon.icon_image = logo
+
 	icon.insert(ignore_permissions=True, ignore_if_duplicate=True)

@@ -35,11 +35,6 @@ web_include_css = ["/assets/tmj/css/custom.css"]
 # Relabel app titles in the desk workspace sidebar (e.g. "ERPNext" -> "Hicom System")
 extend_bootinfo = "tmj.boot.boot_session"
 
-# `bench migrate` re-syncs workspaces and drops app-tagged DB records that have
-# no fixture, wiping the imperatively-built "PT. Tunas Maju Jaya" workspace.
-# Rebuild it after every migrate (runs after the orphan-removal sync).
-after_migrate = "tmj.patches.v0_0.create_tmj_workspace.after_migrate"
-
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "hicom16/public/scss/website"
 

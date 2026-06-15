@@ -1,0 +1,23 @@
+{
+ "app": "tmj",
+ "bg_color": "gray",
+ "creation": "2026-06-15 15:32:00.296320",
+ "docstatus": 0,
+ "doctype": "Desktop Icon",
+ "hidden": 0,
+ "icon": "getting-started",
+ "icon_image": "/files/App%20Logo.png",
+ "icon_type": "Link",
+ "idx": 0,
+ "label": "PT. Tunas Maju Jaya",
+ "link_to": "PT. Tunas Maju Jaya",
+ "link_type": "Workspace Sidebar",
+ "logo_url": "/files/App%20Logo.png",
+ "modified": "2026-06-15 15:32:00.296320",
+ "modified_by": "Administrator",
+ "name": "PT. Tunas Maju Jaya",
+ "owner": "Administrator",
+ "restrict_removal": 0,
+ "roles": [],
+ "standard": 1
+}

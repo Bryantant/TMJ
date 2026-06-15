@@ -53,10 +53,3 @@ jspm_packages/
 
 # Aider AI Chat
 .aider*
-
-# developer_mode auto-exports the imperatively-built "PT. Tunas Maju Jaya"
-# workspace + desktop icon on every (re)create. The after_migrate hook in
-# create_tmj_workspace.py is the source of truth, so these snapshots are
-# redundant and would drift — keep them out of the repo.
-/tmj/hicom_system/workspace/
-/tmj/desktop_icon/
