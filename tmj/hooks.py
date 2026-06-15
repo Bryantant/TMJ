@@ -26,7 +26,7 @@ app_license = "mit"
 
 # include js, css files in header of desk.html
 app_include_css = ["/assets/tmj/css/custom.css"]
-app_include_js = ["/assets/tmj/js/desk_overrides.js"]
+app_include_js = ["desk_overrides.bundle.js"]
 
 # include js, css files in header of web template
 web_include_css = ["/assets/tmj/css/custom.css"]
