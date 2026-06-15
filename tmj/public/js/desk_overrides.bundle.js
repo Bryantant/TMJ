@@ -58,6 +58,39 @@
 	);
 })();
 
+// Keep the current workspace sidebar when navigating to a TREE doctype or a
+// REPORT from a custom workspace sidebar.
+// Bug: frappe.ui.Sidebar.entity_from_route (sidebar.js) only special-cases
+// length-3 "Workspaces/private" routes. So:
+//   - a tree doctype routes as ["Tree", "<DocType>"]  -> returns "Tree"
+//   - a query report routes as ["query-report", "<Report>"] -> returns "query-report"
+// In both cases the returned entity matches no sidebar item's link_to, so the
+// desk can't keep/select our custom sidebar and falls back to the doctype's /
+// report's module sidebar (clicking Warehouse or refreshing on a report jumps
+// to Stock). We override entity_from_route so that when the first segment is a
+// view keyword or "query-report", the real entity (route[1] = the doctype or
+// report name) is returned. That makes get_workspace_sidebars() match our
+// sidebar, so it is actively kept/selected. Preserves the tree view (unlike
+// forcing List) and fixes every tree doctype + report generically.
+(function fixTreeAndReportRouteSidebar() {
+	if (!frappe.ui || !frappe.ui.Sidebar || !frappe.ui.Sidebar.prototype) return;
+	var proto = frappe.ui.Sidebar.prototype;
+	if (proto.__tmj_entity_patch) return;
+	var orig = proto.entity_from_route;
+	var ROUTE_PREFIXES = {
+		List: 1, Tree: 1, Report: 1, Form: 1, Dashboard: 1,
+		Kanban: 1, Calendar: 1, Gantt: 1, Image: 1, Inbox: 1, Map: 1,
+		"query-report": 1,
+	};
+	proto.entity_from_route = function (route) {
+		if (route && route.length >= 2 && ROUTE_PREFIXES[route[0]]) {
+			return route[1];
+		}
+		return orig.call(this, route);
+	};
+	proto.__tmj_entity_patch = true;
+})();
+
 // Hicom16 desk overrides: start with sidebar closed on form/list pages (not workspace)
 frappe.router.on("change", function () {
 	setTimeout(function () {
