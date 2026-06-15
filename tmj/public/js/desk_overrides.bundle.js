@@ -91,6 +91,67 @@
 	proto.__tmj_entity_patch = true;
 })();
 
+// For non-System-Manager users (the client), always show the consolidated
+// "PT. Tunas Maju Jaya" sidebar. It is their only workspace (boot.py scopes the
+// desktop icons to it), but a hard refresh / direct doctype URL has no "current"
+// sidebar to keep, so the desk resolves to the doctype's module sidebar (e.g.
+// refreshing on /app/customer showed "Selling"). Force PT instead. System
+// Managers keep the default behavior so they can still use the module workspaces.
+(function forceClientWorkspaceSidebar() {
+	if (!frappe.ui || !frappe.ui.Sidebar || !frappe.ui.Sidebar.prototype) return;
+	var proto = frappe.ui.Sidebar.prototype;
+	if (proto.__tmj_force_sidebar) return;
+	var WS_TITLE = "PT. Tunas Maju Jaya";
+	var orig = proto.resolve_sidebar;
+	proto.resolve_sidebar = function (entity, module) {
+		var is_admin = (frappe.user_roles || []).indexOf("System Manager") !== -1;
+		var has_ws =
+			frappe.boot &&
+			frappe.boot.workspace_sidebar_item &&
+			frappe.boot.workspace_sidebar_item[WS_TITLE.toLowerCase()];
+		if (!is_admin && has_ws) {
+			this.preferred_sidebars = [WS_TITLE]; // so show_sidebar_for_module keeps it
+			return WS_TITLE;
+		}
+		return orig.call(this, entity, module);
+	};
+	proto.__tmj_force_sidebar = true;
+})();
+
+// Remove the "Company" filter from the Item-wise Sales History report.
+// The report JS is lazy-loaded when the user navigates to it, so we intercept
+// the property assignment on frappe.query_reports rather than patching after load.
+(function removeCompanyFilterItemwiseSalesHistory() {
+	frappe.provide("frappe.query_reports");
+	var _stored = frappe.query_reports["Item-wise Sales History"];
+	Object.defineProperty(frappe.query_reports, "Item-wise Sales History", {
+		configurable: true,
+		get: function () { return _stored; },
+		set: function (def) {
+			if (def && Array.isArray(def.filters)) {
+				def.filters = def.filters.map(function (f) {
+					if (f.fieldname === "company") {
+						f.hidden = 1;
+						f.default = frappe.defaults.get_default("company");
+					}
+					return f;
+				});
+			}
+			_stored = def;
+		},
+	});
+	// Handle the unlikely case it was already loaded
+	if (_stored && Array.isArray(_stored.filters)) {
+		_stored.filters = _stored.filters.map(function (f) {
+			if (f.fieldname === "company") {
+				f.hidden = 1;
+				f.default = frappe.defaults.get_default("company");
+			}
+			return f;
+		});
+	}
+})();
+
 // Hicom16 desk overrides: start with sidebar closed on form/list pages (not workspace)
 frappe.router.on("change", function () {
 	setTimeout(function () {
