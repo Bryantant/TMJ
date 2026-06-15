@@ -113,7 +113,8 @@ SECTIONS = [
 ]
 
 
-def execute():
+def _recreate():
+	"""Idempotently (re)build the workspace, its sidebar, and its desktop icon."""
 	for di in frappe.get_all("Desktop Icon", filters={"link_to": WS}, pluck="name"):
 		frappe.delete_doc("Desktop Icon", di, force=True, ignore_permissions=True)
 	frappe.delete_doc_if_exists("Workspace Sidebar", WS)
@@ -123,6 +124,11 @@ def execute():
 	_create_sidebar()
 	_create_desktop_icon()
 
+
+def execute():
+	"""Manual initial setup (run via `bench execute`)."""
+	_recreate()
+
 	# Per-user Desktop Layout records are snapshots of the home icon grid taken
 	# when the user last arranged it; they do NOT auto-include icons added later.
 	# Clear them so every user's grid regenerates from frappe.boot.desktop_icons
@@ -131,6 +137,21 @@ def execute():
 
 	frappe.db.commit()
 	print(f"Created workspace + sidebar + desktop icon: {WS} (reset Desktop Layouts)")
+
+
+def after_migrate():
+	"""Restore the workspace after every `bench migrate`.
+
+	migrate re-syncs workspaces/desktop-icons from app fixtures and removes
+	app-tagged DB records that have no fixture (remove_orphan_entities,
+	delete_duplicate_icons), which wipes this imperatively-built workspace.
+	Wired via the `after_migrate` hook, this rebuilds it once the sync is done.
+	No Desktop Layout reset here: existing layouts reference the icon by its
+	stable label, so the recreated icon still renders.
+	"""
+	_recreate()
+	frappe.db.commit()
+	print(f"[tmj] Restored workspace after migrate: {WS}")
 
 
 def _create_workspace():
