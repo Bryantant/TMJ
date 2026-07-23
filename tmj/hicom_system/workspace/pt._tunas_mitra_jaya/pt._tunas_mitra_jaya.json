@@ -11,7 +11,7 @@
   }
  ],
  "content": "[{\"id\": \"qa_hdr\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Quick Actions</b></span>\", \"col\": 12}}, {\"id\": \"sc_si\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"New Sales Invoice\", \"col\": 3}}, {\"id\": \"sc_pi\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"New Purchase Invoice\", \"col\": 3}}, {\"id\": \"sc_pay\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"New Payment\", \"col\": 3}}, {\"id\": \"sc_sb\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Balance\", \"col\": 3}}, {\"id\": \"sp1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"ov_hdr\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Overview</b></span>\", \"col\": 12}}, {\"id\": \"ch_out\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Outgoing Bills (Sales Invoice)\", \"col\": 6}}, {\"id\": \"ch_in\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Incoming Bills (Purchase Invoice)\", \"col\": 6}}, {\"id\": \"nc_out\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Total Outgoing Bills\", \"col\": 6}}, {\"id\": \"nc_in\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Total Incoming Bills\", \"col\": 6}}]",
- "creation": "2026-06-15 15:32:00.080214",
+ "creation": "2026-07-14 08:42:00.316746",
  "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
@@ -20,13 +20,13 @@
  "idx": 0,
  "indicator_color": "blue",
  "is_hidden": 0,
- "label": "PT. Tunas Maju Jaya",
+ "label": "PT. Tunas Mitra Jaya",
  "link_type": "DocType",
  "links": [],
- "modified": "2026-06-15 15:32:00.080214",
+ "modified": "2026-07-14 08:42:00.316746",
  "modified_by": "Administrator",
  "module": "Hicom System",
- "name": "PT. Tunas Maju Jaya",
+ "name": "PT. Tunas Mitra Jaya",
  "number_cards": [
   {
    "label": "Total Outgoing Bills",
@@ -73,6 +73,6 @@
    "type": "Report"
   }
  ],
- "title": "PT. Tunas Maju Jaya",
+ "title": "PT. Tunas Mitra Jaya",
  "type": "Workspace"
 }

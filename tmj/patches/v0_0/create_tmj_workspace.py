@@ -1,4 +1,4 @@
-"""Create the consolidated "PT. Tunas Maju Jaya" workspace + sidebar.
+"""Create the consolidated "PT. Tunas Mitra Jaya" workspace + sidebar.
 
 A single Frappe Books-style workspace that surfaces only the ACTIVE (not
 System-Manager-only) doctypes and reports, so the client has one simple entry
@@ -21,7 +21,7 @@ from urllib.parse import quote
 
 import frappe
 
-WS = "PT. Tunas Maju Jaya"
+WS = "PT. Tunas Mitra Jaya"
 MODULE = "Hicom System"
 
 # --- Dashboard landing content (blocks reference shortcuts/charts/number cards) ---

@@ -92,7 +92,7 @@
 })();
 
 // For non-System-Manager users (the client), always show the consolidated
-// "PT. Tunas Maju Jaya" sidebar. It is their only workspace (boot.py scopes the
+// "PT. Tunas Mitra Jaya" sidebar. It is their only workspace (boot.py scopes the
 // desktop icons to it), but a hard refresh / direct doctype URL has no "current"
 // sidebar to keep, so the desk resolves to the doctype's module sidebar (e.g.
 // refreshing on /app/customer showed "Selling"). Force PT instead. System
@@ -101,7 +101,7 @@
 	if (!frappe.ui || !frappe.ui.Sidebar || !frappe.ui.Sidebar.prototype) return;
 	var proto = frappe.ui.Sidebar.prototype;
 	if (proto.__tmj_force_sidebar) return;
-	var WS_TITLE = "PT. Tunas Maju Jaya";
+	var WS_TITLE = "PT. Tunas Mitra Jaya";
 	var orig = proto.resolve_sidebar;
 	proto.resolve_sidebar = function (entity, module) {
 		var is_admin = (frappe.user_roles || []).indexOf("System Manager") !== -1;

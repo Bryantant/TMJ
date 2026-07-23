@@ -1,6 +1,6 @@
 # TMJ Production Restore Runbook (frappe_docker, single server, HTTPS)
 
-This runbook restores a **PT. Tunas Maju Jaya** ERPNext site onto a **Docker production deployment** built on the official [`frappe/frappe_docker`](https://github.com/frappe/frappe_docker), running on a **single server** with **HTTPS terminated by Traefik (Let's Encrypt)**.
+This runbook restores a **PT. Tunas Mitra Jaya** ERPNext site onto a **Docker production deployment** built on the official [`frappe/frappe_docker`](https://github.com/frappe/frappe_docker), running on a **single server** with **HTTPS terminated by Traefik (Let's Encrypt)**.
 
 The source was a local Frappe **bench v16 dev site** named `tmj.localhost`. The handover is **not** a fresh install: it is a **full database + files restore** (the `20260615_231534-tmj_localhost-*` backup set) into a **custom Docker image** that bakes in `frappe`, `erpnext`, and the custom **`tmj`** app (module label "Hicom System"). All versions are pinned to **Frappe 16.22.0 / ERPNext 16.22.0**. The placeholder production domain throughout is `erp.example.com` — the client picks the real one.
 
@@ -426,8 +426,8 @@ import frappe
 # tmj app installed
 assert "tmj" in frappe.get_installed_apps(), "tmj app missing"
 
-# The PT. Tunas Maju Jaya workspace exists (the landing the client uses)
-assert frappe.db.exists("Workspace", "PT. Tunas Maju Jaya"), "workspace missing"
+# The PT. Tunas Mitra Jaya workspace exists (the landing the client uses)
+assert frappe.db.exists("Workspace", "PT. Tunas Mitra Jaya"), "workspace missing"
 
 # Number Cards & Dashboard Charts the workspace renders
 print("Number Cards:", frappe.db.count("Number Card"))
@@ -455,10 +455,10 @@ print("has encryption_key:", bool(frappe.conf.get("encryption_key")))     # expe
 
 ### Human UI checks
 
-- **Workspace landing:** logging in lands on / shows the **"PT. Tunas Maju Jaya"** workspace with its Number Cards and Dashboard Charts populated.
+- **Workspace landing:** logging in lands on / shows the **"PT. Tunas Mitra Jaya"** workspace with its Number Cards and Dashboard Charts populated.
 - **Branding logo:** the custom logo + splash render (these came from `-files.tar` public files).
 - **"Submitted" statuses:** payment-derived invoice statuses display the neutral **"Submitted"** label (the relabel customization).
-- **Non-admin scoping:** a **non-admin** user sees only the PT. Tunas Maju Jaya sidebar/workspace and the unused doctypes stay hidden (Custom DocPerms); no "Edit DocType" affordances (developer_mode off).
+- **Non-admin scoping:** a **non-admin** user sees only the PT. Tunas Mitra Jaya sidebar/workspace and the unused doctypes stay hidden (Custom DocPerms); no "Edit DocType" affordances (developer_mode off).
 - **Admin password rotated:** the §8 temp Administrator password **no longer works**; the new strong unique password (set in §10 step 4) does. The built-in `Administrator` is restricted/audited and a named admin user exists.
 - **Re-entered secrets:** any Email Account / integration that you re-keyed (§10) actually connects.
 

@@ -14,7 +14,7 @@ APP_TITLE_OVERRIDES = {
 # dropdown "Workspaces" submenu — both read frappe.boot.desktop_icons.
 # The client gets a single consolidated workspace; the old per-module
 # workspaces (Buying/Selling/Stock) remain visible to System Managers only.
-OPEN_WORKSPACES = {"PT. Tunas Maju Jaya"}
+OPEN_WORKSPACES = {"PT. Tunas Mitra Jaya"}
 
 
 def boot_session(bootinfo):
