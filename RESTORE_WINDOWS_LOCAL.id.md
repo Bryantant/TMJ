@@ -14,7 +14,7 @@ Kalau nanti butuh deploy ke VPS beneran (domain + HTTPS), itu ada di [`RESTORE.m
 
 ```bash
 cd /Users/bryantantonio/Dev/benchv16/apps/tmj
-git push origin main            # pastikan kode app sudah ke-push
+git push upstream main          # pastikan kode app sudah ke-push (remote-nya "upstream", bukan "origin")
 
 cd /Users/bryantantonio/Dev/benchv16
 bench --site tmj.localhost backup --with-files

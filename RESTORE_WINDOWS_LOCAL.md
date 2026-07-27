@@ -39,7 +39,8 @@ The image is built from the GitHub repo, not from this Mac's working copy — an
 ```bash
 cd /Users/bryantantonio/Dev/benchv16/apps/tmj
 git status                     # make sure nothing important is uncommitted
-git push origin main
+git remote -v                  # confirm the remote name — this repo uses "upstream", not "origin"
+git push upstream main
 ```
 
 ### A.2 Take a fresh backup
