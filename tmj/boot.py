@@ -9,13 +9,6 @@ APP_TITLE_OVERRIDES = {
 	"frappe": "Hicom Core",
 }
 
-# Workspaces visible to all roles. Everything else is hidden from non-System
-# Manager users. This drives both the home-page icon grid AND the sidebar
-# dropdown "Workspaces" submenu — both read frappe.boot.desktop_icons.
-# The client gets a single consolidated workspace; the old per-module
-# workspaces (Buying/Selling/Stock) remain visible to System Managers only.
-OPEN_WORKSPACES = {"PT. Tunas Mitra Jaya"}
-
 
 def boot_session(bootinfo):
 	"""Extend the boot payload without touching core files.
@@ -29,8 +22,46 @@ def boot_session(bootinfo):
 		if new_title:
 			app["app_title"] = new_title
 
-	# Restrict workspace icons for users without System Manager.
-	if "System Manager" not in frappe.get_roles():
-		open_lower = {w.lower() for w in OPEN_WORKSPACES}
-		icons = bootinfo.get("desktop_icons") or []
-		bootinfo.desktop_icons = [i for i in icons if (i.get("name") or "").lower() in open_lower]
+	_hide_role_restricted_workspace_icons(bootinfo)
+
+
+def _hide_role_restricted_workspace_icons(bootinfo):
+	"""Hide Desktop Icons whose target Workspace's own `roles` table excludes
+	the current user — e.g. the "Assets" workspace has roles=[System Manager].
+
+	Core's own desktop-icon permission check (get_desktop_icons in
+	frappe/desk/doctype/desktop_icon/desktop_icon.py) only verifies that the
+	icon's linked Workspace *Sidebar* has >=1 permitted item. A restricted
+	workspace's sidebar can still contain generic items (e.g. "Item",
+	"Accounts Settings") that the user can read via unrelated roles, so the
+	icon survives core's filter and the workspace keeps appearing in the
+	"Workspaces" dropdown (ui/sidebar/sidebar_header.js sibling_workspaces)
+	even though opening it is blocked by Workspace.roles. This mirrors
+	Workspace.roles directly instead of duplicating a hand-maintained
+	allowlist, so it stays correct as roles are edited via the UI.
+	"""
+	icons = bootinfo.get("desktop_icons") or []
+	if not icons:
+		return
+
+	user_roles = set(frappe.get_roles())
+	if "System Manager" in user_roles:
+		return
+
+	kept = []
+	for icon in icons:
+		if icon.get("icon_type") == "Folder" or icon.get("link_type") != "Workspace Sidebar":
+			kept.append(icon)
+			continue
+
+		ws_roles = frappe.get_all(
+			"Has Role",
+			filters={"parenttype": "Workspace", "parent": icon.get("link_to")},
+			pluck="role",
+		)
+		if ws_roles and not (set(ws_roles) & user_roles):
+			continue
+
+		kept.append(icon)
+
+	bootinfo.desktop_icons = kept

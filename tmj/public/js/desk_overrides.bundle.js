@@ -22,42 +22,6 @@
 	observer.observe(document.body, { childList: true, subtree: true });
 })();
 
-// Restrict desktop layout editing ("Edit Layout" / "Reset Layout") to System Manager.
-// Frappe v16 exposes both to every user — via the desktop right-click menu and a
-// floating pencil button — with no server-side role gate (see desk/page/desktop/desktop.js,
-// setup_context_menu/setup_edit_button: no role check). We suppress both on the client
-// for users without the System Manager role.
-(function restrictDesktopLayoutEditing() {
-	function isSystemManager() {
-		// frappe.user_roles is populated once boot loads; absent before then.
-		return (frappe.user_roles || []).indexOf("System Manager") !== -1;
-	}
-
-	// Hide the floating pencil "Edit Layout" button (.desktop-edit, appended to <body>).
-	// Gated on boot being ready so the role check is valid.
-	frappe.after_ajax(function () {
-		if (isSystemManager()) return;
-		var style = document.createElement("style");
-		style.textContent = ".desktop-edit { display: none !important; }";
-		document.head.appendChild(style);
-	});
-
-	// Suppress the right-click context menu (Edit Layout / Reset Layout) on the desktop
-	// icon grid. The menu binds `contextmenu` on `.desktop-container` (menu.js); a
-	// capture-phase listener that stops propagation prevents it from ever opening.
-	// The role is checked lazily at event time, so boot is always loaded by then.
-	document.addEventListener(
-		"contextmenu",
-		function (e) {
-			if (!isSystemManager() && e.target.closest && e.target.closest(".desktop-container")) {
-				e.preventDefault();
-				e.stopImmediatePropagation();
-			}
-		},
-		true
-	);
-})();
-
 // Keep the current workspace sidebar when navigating to a TREE doctype or a
 // REPORT from a custom workspace sidebar.
 // Bug: frappe.ui.Sidebar.entity_from_route (sidebar.js) only special-cases
@@ -89,33 +53,6 @@
 		return orig.call(this, route);
 	};
 	proto.__tmj_entity_patch = true;
-})();
-
-// For non-System-Manager users (the client), always show the consolidated
-// "PT. Tunas Mitra Jaya" sidebar. It is their only workspace (boot.py scopes the
-// desktop icons to it), but a hard refresh / direct doctype URL has no "current"
-// sidebar to keep, so the desk resolves to the doctype's module sidebar (e.g.
-// refreshing on /app/customer showed "Selling"). Force PT instead. System
-// Managers keep the default behavior so they can still use the module workspaces.
-(function forceClientWorkspaceSidebar() {
-	if (!frappe.ui || !frappe.ui.Sidebar || !frappe.ui.Sidebar.prototype) return;
-	var proto = frappe.ui.Sidebar.prototype;
-	if (proto.__tmj_force_sidebar) return;
-	var WS_TITLE = "PT. Tunas Mitra Jaya";
-	var orig = proto.resolve_sidebar;
-	proto.resolve_sidebar = function (entity, module) {
-		var is_admin = (frappe.user_roles || []).indexOf("System Manager") !== -1;
-		var has_ws =
-			frappe.boot &&
-			frappe.boot.workspace_sidebar_item &&
-			frappe.boot.workspace_sidebar_item[WS_TITLE.toLowerCase()];
-		if (!is_admin && has_ws) {
-			this.preferred_sidebars = [WS_TITLE]; // so show_sidebar_for_module keeps it
-			return WS_TITLE;
-		}
-		return orig.call(this, entity, module);
-	};
-	proto.__tmj_force_sidebar = true;
 })();
 
 // Make "Custom Report" sidebar links open in the Script Report (query-report) view.
@@ -460,20 +397,190 @@
 	if (_stored) patch(_stored);
 })();
 
-// Hicom16 desk overrides: start with sidebar closed on form/list pages (not workspace)
-frappe.router.on("change", function () {
-	setTimeout(function () {
-		var route = frappe.get_route();
-		// Skip workspace — its left nav should stay open
-		if (!route || !route[0] || route[0] === "Workspaces") return;
+// Hide Company (default it), Finance Book, Cost Center, Project, Sales Partner,
+// Territory, Show Linked Delivery Notes, and Revaluation Journals filters from
+// the Accounts Receivable report.
+(function hideAccountsReceivableFilters() {
+	frappe.provide("frappe.query_reports");
+	var HIDDEN = {
+		company: 1,
+		finance_book: 1,
+		cost_center: 1,
+		project: 1,
+		sales_partner: 1,
+		territory: 1,
+		show_delivery_notes: 1,
+		for_revaluation_journals: 1,
+	};
+	var _stored = frappe.query_reports["Accounts Receivable"];
 
-		var $sidebar = $(".layout-side-section");
-		if ($sidebar.is(":visible")) {
-			$sidebar.hide();
-			var $icon = $(".sidebar-toggle-btn .sidebar-toggle-icon");
-			if ($icon.length && frappe.utils) {
-				$icon.html(frappe.utils.icon("es-line-sidebar-expand", "md"));
-			}
+	function patch(def) {
+		if (def && Array.isArray(def.filters)) {
+			def.filters = def.filters.map(function (f) {
+				if (HIDDEN[f.fieldname]) {
+					f.hidden = 1;
+					if (f.fieldname === "company") {
+						f.default = frappe.defaults.get_default("company");
+					}
+				}
+				return f;
+			});
 		}
-	}, 300);
-});
+	}
+
+	Object.defineProperty(frappe.query_reports, "Accounts Receivable", {
+		configurable: true,
+		get: function () { return _stored; },
+		set: function (def) { patch(def); _stored = def; },
+	});
+
+	if (_stored) patch(_stored);
+})();
+
+// Hide Company (default it), Finance Book, Cost Center, Project, Sales Partner,
+// and Territory filters from the Accounts Receivable Summary report.
+(function hideAccountsReceivableSummaryFilters() {
+	frappe.provide("frappe.query_reports");
+	var HIDDEN = {
+		company: 1,
+		finance_book: 1,
+		cost_center: 1,
+		project: 1,
+		sales_partner: 1,
+		territory: 1,
+	};
+	var _stored = frappe.query_reports["Accounts Receivable Summary"];
+
+	function patch(def) {
+		if (def && Array.isArray(def.filters)) {
+			def.filters = def.filters.map(function (f) {
+				if (HIDDEN[f.fieldname]) {
+					f.hidden = 1;
+					if (f.fieldname === "company") {
+						f.default = frappe.defaults.get_default("company");
+					}
+				}
+				return f;
+			});
+		}
+	}
+
+	Object.defineProperty(frappe.query_reports, "Accounts Receivable Summary", {
+		configurable: true,
+		get: function () { return _stored; },
+		set: function (def) { patch(def); _stored = def; },
+	});
+
+	if (_stored) patch(_stored);
+})();
+
+// Hide Company (default it), Finance Book, Cost Center, Project, Sales Partner,
+// Territory, Revaluation Journals, and Handle Employee Advances filters from
+// the Accounts Payable report. (Accounts Payable has no Sales Partner /
+// Territory filters, so those two entries are harmless no-ops here.)
+(function hideAccountsPayableFilters() {
+	frappe.provide("frappe.query_reports");
+	var HIDDEN = {
+		company: 1,
+		finance_book: 1,
+		cost_center: 1,
+		project: 1,
+		sales_partner: 1,
+		territory: 1,
+		for_revaluation_journals: 1,
+		handle_employee_advances: 1,
+	};
+	var _stored = frappe.query_reports["Accounts Payable"];
+
+	function patch(def) {
+		if (def && Array.isArray(def.filters)) {
+			def.filters = def.filters.map(function (f) {
+				if (HIDDEN[f.fieldname]) {
+					f.hidden = 1;
+					if (f.fieldname === "company") {
+						f.default = frappe.defaults.get_default("company");
+					}
+				}
+				return f;
+			});
+		}
+	}
+
+	Object.defineProperty(frappe.query_reports, "Accounts Payable", {
+		configurable: true,
+		get: function () { return _stored; },
+		set: function (def) { patch(def); _stored = def; },
+	});
+
+	if (_stored) patch(_stored);
+})();
+
+// Hide Company (default it), Finance Book, Cost Center, Project, Sales Partner,
+// Territory, and Revaluation Journals filters from the Accounts Payable
+// Summary report. (Accounts Payable Summary has no Sales Partner / Territory
+// filters, so those two entries are harmless no-ops here.)
+(function hideAccountsPayableSummaryFilters() {
+	frappe.provide("frappe.query_reports");
+	var HIDDEN = {
+		company: 1,
+		finance_book: 1,
+		cost_center: 1,
+		project: 1,
+		sales_partner: 1,
+		territory: 1,
+		for_revaluation_journals: 1,
+	};
+	var _stored = frappe.query_reports["Accounts Payable Summary"];
+
+	function patch(def) {
+		if (def && Array.isArray(def.filters)) {
+			def.filters = def.filters.map(function (f) {
+				if (HIDDEN[f.fieldname]) {
+					f.hidden = 1;
+					if (f.fieldname === "company") {
+						f.default = frappe.defaults.get_default("company");
+					}
+				}
+				return f;
+			});
+		}
+	}
+
+	Object.defineProperty(frappe.query_reports, "Accounts Payable Summary", {
+		configurable: true,
+		get: function () { return _stored; },
+		set: function (def) { patch(def); _stored = def; },
+	});
+
+	if (_stored) patch(_stored);
+})();
+
+// Hide Company (default it), Finance Book, Cost Center, and Project filters
+// from the Cash Flow report.
+(function hideCashFlowFilters() {
+	frappe.provide("frappe.query_reports");
+	var HIDDEN = { company: 1, finance_book: 1, cost_center: 1, project: 1 };
+	var _stored = frappe.query_reports["Cash Flow"];
+
+	function patch(def) {
+		if (def && Array.isArray(def.filters)) {
+			def.filters = def.filters.map(function (f) {
+				if (HIDDEN[f.fieldname]) {
+					f.hidden = 1;
+					if (f.fieldname === "company") {
+						f.default = frappe.defaults.get_default("company");
+					}
+				}
+				return f;
+			});
+		}
+	}
+
+	Object.defineProperty(frappe.query_reports, "Cash Flow", {
+		configurable: true,
+		get: function () { return _stored; },
+		set: function (def) { patch(def); _stored = def; },
+	});
+
+	if (_stored) patch(_stored);
+})();

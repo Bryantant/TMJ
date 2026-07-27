@@ -1,6 +1,6 @@
 import frappe
 
-OPEN_TO_ALL = {"Buying", "Selling", "Stock"}
+OPEN_TO_ALL = {"Buying", "Selling", "Stock", "PT. Tunas Mitra Jaya"}
 
 
 def execute():
@@ -18,6 +18,11 @@ def execute():
 		doc.roles = []
 		doc.append("roles", {"role": "System Manager"})
 		doc.flags.ignore_mandatory = True
+		# Some standard ERPNext workspaces (e.g. "Financial Reports") ship links to
+		# reports that don't exist in this install (e.g. Trial Balance, Trial Balance
+		# for Party) — a pre-existing upstream fixture inconsistency, not something
+		# this patch should fix. Skip link validation so the role change still saves.
+		doc.flags.ignore_links = True
 		doc.save(ignore_permissions=True)
 		updated.append(ws.name)
 
